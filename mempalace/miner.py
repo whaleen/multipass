@@ -311,11 +311,12 @@ def detect_room(filepath: Path, content: str, rooms: list, project_path: Path) -
     filename = filepath.stem.lower()
     content_lower = content[:2000].lower()
 
-    # Priority 1: folder path contains room name
+    # Priority 1: folder path matches room name or keywords
     path_parts = relative.replace("\\", "/").split("/")
     for part in path_parts[:-1]:  # skip filename itself
         for room in rooms:
-            if room["name"].lower() in part or part in room["name"].lower():
+            candidates = [room["name"].lower()] + [k.lower() for k in room.get("keywords", [])]
+            if any(part == c or c in part or part in c for c in candidates):
                 return room["name"]
 
     # Priority 2: filename matches room name
