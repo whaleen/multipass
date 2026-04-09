@@ -1,12 +1,12 @@
-# Contributing to MemPalace
+# Contributing to multipass
 
-Thanks for wanting to help. MemPalace is open source and we welcome contributions of all sizes — from typo fixes to new features.
+Thanks for wanting to help. multipass is open source and we welcome contributions of all sizes — from typo fixes to new features.
 
 ## Getting Started
 
 ```bash
-git clone https://github.com/milla-jovovich/mempalace.git
-cd mempalace
+git clone https://github.com/whaleen/multipass.git
+cd multipass
 pip install -e ".[dev]"    # installs with dev dependencies (pytest, build, twine)
 ```
 
@@ -18,23 +18,10 @@ pytest tests/ -v
 
 All tests must pass before submitting a PR. Tests should run without API keys or network access.
 
-## Running Benchmarks
-
-```bash
-# Quick test (20 questions, ~30 seconds)
-python benchmarks/longmemeval_bench.py /path/to/longmemeval_s_cleaned.json --limit 20
-
-# Full benchmark (500 questions, ~5 minutes)
-python benchmarks/longmemeval_bench.py /path/to/longmemeval_s_cleaned.json
-```
-
-See [benchmarks/README.md](benchmarks/README.md) for data download instructions and reproduction guide.
-
 ## Project Structure
 
 ```
-mempalace/          ← core package (see mempalace/README.md for module guide)
-benchmarks/         ← reproducible benchmark runners
+multipass/          ← core package (see multipass/README.md for module guide)
 hooks/              ← Claude Code auto-save hooks
 examples/           ← usage examples
 tests/              ← test suite
@@ -51,7 +38,7 @@ assets/             ← logo + brand
    - `feat: add Notion export format`
    - `fix: handle empty transcript files`
    - `docs: update MCP tool descriptions`
-   - `bench: add LoCoMo turn-level metrics`
+   - `refactor: simplify room detection flow`
 6. Push to your fork and open a PR against `main`
 
 ## Code Style
@@ -64,11 +51,11 @@ assets/             ← logo + brand
 
 ## Good First Issues
 
-Check the [Issues](https://github.com/milla-jovovich/mempalace/issues) tab. Great starting points:
+Check the [Issues](https://github.com/whaleen/multipass/issues) tab. Great starting points:
 
 - **New chat formats**: Add import support for Cursor, Copilot, or other AI tool exports
 - **Room detection**: Improve pattern matching in `room_detector_local.py`
-- **Tests**: Increase coverage — especially for `knowledge_graph.py` and `palace_graph.py`
+- **Tests**: Increase coverage — especially for `knowledge_graph.py` and `ship_graph.py`
 - **Entity detection**: Better name disambiguation in `entity_detector.py`
 - **Docs**: Improve examples, add tutorials
 
@@ -79,7 +66,7 @@ If you're planning a significant change, open an issue first to discuss the appr
 - **Verbatim first**: Never summarize user content. Store exact words.
 - **Local first**: Everything runs on the user's machine. No cloud dependencies.
 - **Zero API by default**: Core features must work without any API key.
-- **Palace structure matters**: Wings, halls, and rooms aren't cosmetic — they drive a 34% retrieval improvement. Respect the hierarchy.
+- **Ship structure matters**: Wings, corridors, and rooms aren't cosmetic — they drive a 34% retrieval improvement. Respect the hierarchy.
 
 ## Community
 
