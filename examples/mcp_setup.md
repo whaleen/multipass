@@ -1,27 +1,60 @@
-# MCP Integration — Claude Code
+# MCP Setup
 
-## Setup
+This example is for the Rust rewrite.
 
-Run the MCP server:
+## Start The Server
 
-```bash
-python -m multipass.mcp_server
-```
-
-Or add it to Claude Code:
+From the repo root:
 
 ```bash
-claude mcp add multipass -- python -m multipass.mcp_server
+cargo run -p multipass-cli -- --ship /absolute/path/to/ship mcp-server
 ```
 
-## Available Tools
+Or after building:
 
-The server exposes the full multipass MCP toolset. Common entry points include:
+```bash
+cargo build -p multipass-cli
+./target/debug/multipass-rs --ship /absolute/path/to/ship mcp-server
+```
 
-- **multipass_status** — ship stats (wings, rooms, crate counts)
-- **multipass_search** — semantic search across all memories
-- **multipass_list_wings** — list all projects in the ship
+## Add It To A Client
 
-## Usage in Claude Code
+Example shape for an MCP client that launches a command:
 
-Once configured, Claude Code can search your memories directly during conversations.
+- executable: `/absolute/path/to/multipass/target/debug/multipass-rs`
+- args: `--ship /absolute/path/to/ship mcp-server`
+
+For clients that support a shell wrapper, the equivalent is:
+
+```bash
+cargo run -p multipass-cli -- --ship /absolute/path/to/ship mcp-server
+```
+
+## Current Tool Surface
+
+- `multipass_status`
+- `multipass_list_wings`
+- `multipass_list_rooms`
+- `multipass_search`
+- `multipass_add_record`
+- `multipass_delete_record`
+
+## What The Tools Are Good For Right Now
+
+- `multipass_status`
+  - quick ship health and record counts
+- `multipass_search`
+  - text retrieval over the current SQLite-backed store
+- `multipass_add_record`
+  - manual persistence from an MCP-capable client
+- `multipass_delete_record`
+  - cleanup of bad manual records
+
+## What This Example Does Not Promise
+
+The rewrite does not yet provide:
+
+- legacy Python/Chroma parity
+- transcript import over MCP
+- hook-driven automatic save flows
+- richer write tools beyond manual record add/delete

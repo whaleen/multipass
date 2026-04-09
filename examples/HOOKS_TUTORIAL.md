@@ -1,28 +1,69 @@
-# How to Use multipass Hooks (Auto-Save)
+# Hooks Tutorial
 
-multipass hooks act as an "Auto-Save" feature. They help your AI keep a permanent memory without you needing to run manual commands.
+The hook scripts are part of the active rewrite flow.
 
-### 1. What are these hooks?
-* **Save Hook** (`multipass_save_hook.sh`): Saves new facts and decisions every 15 messages.
-* **PreCompact Hook** (`multipass_precompact_hook.sh`): Saves your context right before the AI's memory window fills up.
+Their purpose is simple:
 
-### 2. Setup for Claude Code
-Add this to your configuration file to enable automatic background saving:
+- stop the agent at controlled checkpoints
+- force it to persist important context before stopping or compacting
+
+They do not write directly to the ship themselves. They block so the agent can save through the
+current multipass surface, which is the MCP write path.
+
+## Available Hooks
+
+- `hooks/multipass_save_hook.sh`
+  - blocks every `MULTIPASS_SAVE_INTERVAL` human messages
+- `hooks/multipass_precompact_hook.sh`
+  - always blocks before compaction
+
+## Claude Code Setup
 
 ```json
 {
   "hooks": {
-    "Stop": [
-      {
-        "matcher": "", 
-        "hooks": [{"type": "command", "command": "./hooks/multipass_save_hook.sh"}]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "", 
-        "hooks": [{"type": "command", "command": "./hooks/multipass_precompact_hook.sh"}]
-      }
-    ]
+    "Stop": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "/absolute/path/to/hooks/multipass_save_hook.sh",
+        "timeout": 30
+      }]
+    }],
+    "PreCompact": [{
+      "hooks": [{
+        "type": "command",
+        "command": "/absolute/path/to/hooks/multipass_precompact_hook.sh",
+        "timeout": 30
+      }]
+    }]
   }
 }
+```
+
+## What The Agent Should Do When Blocked
+
+When the hook blocks, the agent should persist memory into multipass now.
+
+Current preferred path:
+
+1. use MCP
+2. call `multipass_add_record`
+3. save concrete decisions, constraints, code context, and useful quotes
+
+## Configuration
+
+- `MULTIPASS_SAVE_INTERVAL`
+  - default `15`
+- `MULTIPASS_HOOK_STATE_DIR`
+  - default `~/.multipass/hook_state`
+
+## Debugging
+
+```bash
+cat ~/.multipass/hook_state/hook.log
+```
+
+For the authoritative details, see:
+
+- [hooks/README.md](/Users/josh/Projects/_whaleen/multipass/hooks/README.md)

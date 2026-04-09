@@ -1,95 +1,65 @@
-# Gemini CLI Integration Guide
+# Gemini CLI Setup
 
-This guide explains how to set up multipass as a permanent memory for the [Gemini CLI](https://github.com/google/gemini-cli).
+This example describes the **current Rust rewrite** workflow.
 
-## Prerequisites
+## Current State
 
-- Python 3.9+
-- Gemini CLI installed and configured
+The Rust rewrite can already act as an MCP server over stdio, but it is still early:
 
-## 1. Installation
+- supported now:
+  - `multipass_status`
+  - `multipass_list_wings`
+  - `multipass_list_rooms`
+  - `multipass_search`
+  - `multipass_add_record`
+  - `multipass_delete_record`
+- not implemented yet:
+  - conversation import
+  - hook-driven auto-save
+  - richer AAAK synthesis beyond the current wake-up brief
 
-On many Linux systems, installing Python packages globally is restricted. We recommend using a local virtual environment within the multipass directory.
+## Run The Server
 
-```bash
-# Clone the repository (if you haven't already)
-git clone https://github.com/whaleen/multipass.git
-cd multipass
-
-# Create a virtual environment
-python3 -m venv .venv
-
-# Install dependencies and multipass in editable mode
-.venv/bin/pip install -e .
-```
-
-## 2. Initialization
-
-Set up your "Ship" (the database) and configure your identity.
+From the repo:
 
 ```bash
-# Initialize the ship in the current directory
-.venv/bin/python3 -m multipass init .
+cargo run -p multipass-cli -- --ship /absolute/path/to/ship mcp-server
 ```
 
-### Identity and Wings (Optional but Recommended)
-You can manually define who you are and what projects you work on by creating/editing these files in `~/.multipass/`:
-
-- **`~/.multipass/identity.txt`**: A plain text file describing your role and focus.
-- **`~/.multipass/wing_config.json`**: A JSON file mapping projects and name variants to "Wings".
-
-## 3. Connect to Gemini CLI (MCP)
-
-Register multipass as an MCP server so Gemini CLI can use its tools.
+If you build the binary first:
 
 ```bash
-gemini mcp add multipass /absolute/path/to/multipass/.venv/bin/python3 -m multipass.mcp_server --scope user
-```
-*Note: Use the absolute path to ensure it works from any directory.*
-
-## 4. Enable Auto-Saving (Hooks)
-
-To ensure the AI saves memories automatically when conversation history becomes too long, add a `PreCompress` hook to your Gemini CLI settings.
-
-Edit your `~/.gemini/settings.json` and add the following:
-
-```json
-{
-  "hooks": {
-    "PreCompress": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/absolute/path/to/multipass/hooks/multipass_precompact_hook.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
+cargo build -p multipass-cli
+./target/debug/multipass-rs --ship /absolute/path/to/ship mcp-server
 ```
 
-Make sure the hook scripts are executable:
+## Register With Gemini CLI
+
+Use the built binary or `cargo run` wrapper as your MCP command.
+
+Example with the built binary:
+
 ```bash
-chmod +x hooks/*.sh
+gemini mcp add multipass /absolute/path/to/multipass/target/debug/multipass-rs -- --ship /absolute/path/to/ship mcp-server --scope user
 ```
 
-## 5. Usage
+If Gemini expects the command and args split differently in your setup, keep the same executable
+and trailing args:
 
-Once connected, Gemini CLI will automatically:
-- Start the multipass server on launch.
-- Use `multipass_search` to find relevant past discussions.
-- Use the `PreCompress` hook to save new memories before they are lost.
+- executable: `/absolute/path/to/multipass/target/debug/multipass-rs`
+- args: `--ship /absolute/path/to/ship mcp-server`
 
-### Manual Mining
-If you want the AI to learn from your existing code or docs immediately, run the "mine" command:
-```bash
-.venv/bin/python3 -m multipass mine /path/to/your/project
-```
+## Suggested First Check
 
-### Verification
-In a Gemini CLI session, you can run:
-- `/mcp list`: Verify `multipass` is `CONNECTED`.
-- `/hooks panel`: Verify the `PreCompress` hook is active.
+After connecting, verify that Gemini can call:
+
+- `multipass_status`
+- `multipass_search`
+- `multipass_add_record`
+
+Those are the most useful current tools in the rewrite.
+
+## Important Caveat
+
+This is not the old Python/Chroma server. If you need legacy behavior, that still exists in the
+Python reference implementation, but the rewrite should be treated as the active target surface.

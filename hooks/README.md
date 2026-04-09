@@ -1,15 +1,30 @@
-# multipass Hooks — Auto-Save for Terminal AI Tools
+# Hooks
 
-These hook scripts make multipass save automatically. No manual "save" commands needed.
+These hooks are part of the active multipass workflow.
+
+They are not a side feature and they are not legacy wrappers around the old Python/Chroma ingest
+path. Their job is narrower and more important: decide when an agent must persist memory before
+stopping or compacting.
 
 ## What They Do
 
 | Hook | When It Fires | What Happens |
 |------|--------------|-------------|
-| **Save Hook** | Every 15 human messages | Blocks the AI, tells it to save key topics/decisions/quotes to the ship |
-| **PreCompact Hook** | Right before context compaction | Emergency save — forces the AI to save EVERYTHING before losing context |
+| `multipass_save_hook.sh` | every `MULTIPASS_SAVE_INTERVAL` human messages | blocks the agent and tells it to persist important context |
+| `multipass_precompact_hook.sh` | immediately before compaction | always blocks so the agent saves before context is lost |
 
-The AI does the actual filing — it knows the conversation context, so it classifies memories into the right wings/corridors/lockers. The hooks just tell it WHEN to save.
+The hooks themselves do **not** write records into the ship. They force the agent to do that
+through the active multipass memory surface, which is currently the MCP write path.
+
+## Current Persistence Model
+
+When a hook blocks, the agent should save via multipass itself:
+
+- preferably through MCP `multipass_add_record`
+- storing concrete facts, decisions, constraints, code context, and useful verbatim quotes
+
+This keeps the hook system aligned with the rewrite instead of reviving the old transcript-ingest
+path.
 
 ## Install — Claude Code
 
@@ -38,13 +53,14 @@ Add to `.claude/settings.local.json`:
 ```
 
 Make them executable:
+
 ```bash
 chmod +x hooks/multipass_save_hook.sh hooks/multipass_precompact_hook.sh
 ```
 
-## Install — Codex CLI (OpenAI)
+## Install — Codex CLI
 
-Add to `.codex/hooks.json`:
+If your Codex setup supports command hooks, use the same scripts:
 
 ```json
 {
@@ -63,76 +79,43 @@ Add to `.codex/hooks.json`:
 
 ## Configuration
 
-Edit `multipass_save_hook.sh` to change:
+Environment variables:
 
-- **`SAVE_INTERVAL=15`** — How many human messages between saves. Lower = more frequent saves, higher = less interruption.
-- **`STATE_DIR`** — Where hook state is stored (defaults to `~/.multipass/hook_state/`)
-- **`MULTIPASS_DIR`** — Optional. Set to a conversations directory to auto-run `multipass mine <dir>` on each save trigger. Leave blank (default) to let the AI handle saving via the block reason message.
+- `MULTIPASS_SAVE_INTERVAL`
+  - default: `15`
+  - how many human messages between auto-save checkpoints
+- `MULTIPASS_HOOK_STATE_DIR`
+  - default: `~/.multipass/hook_state`
+  - where hook state and logs are stored
 
-### multipass CLI
+## Architecture
 
-The relevant commands are:
-
-```bash
-multipass mine <dir>               # Mine all files in a directory
-multipass mine <dir> --mode convos # Mine conversation transcripts only
-```
-
-The hooks resolve the repo root automatically from their own path, so they work regardless of where you install the repo.
-
-## How It Works (Technical)
-
-### Save Hook (Stop event)
-
-```
-User sends message → AI responds → Claude Code fires Stop hook
-                                            ↓
-                                    Hook counts human messages in JSONL transcript
-                                            ↓
-                              ┌─── < 15 since last save ──→ echo "{}" (let AI stop)
-                              │
-                              └─── ≥ 15 since last save ──→ {"decision": "block", "reason": "save..."}
-                                                                    ↓
-                                                            AI saves to ship
-                                                                    ↓
-                                                            AI tries to stop again
-                                                                    ↓
-                                                            stop_hook_active = true
-                                                                    ↓
-                                                            Hook sees flag → echo "{}" (let it through)
-```
-
-The `stop_hook_active` flag prevents infinite loops: block once → AI saves → tries to stop → flag is true → we let it through.
-
-### PreCompact Hook
-
-```
-Context window getting full → Claude Code fires PreCompact
-                                        ↓
-                                Hook ALWAYS blocks
-                                        ↓
-                                AI saves everything
-                                        ↓
-                                Compaction proceeds
-```
-
-No counting needed — compaction always warrants a save.
+The hook scripts are self-contained shell entrypoints. They use small local `python3` snippets for
+JSON parsing and transcript counting, but they do not depend on any in-repo Python package.
 
 ## Debugging
 
 Check the hook log:
+
 ```bash
 cat ~/.multipass/hook_state/hook.log
 ```
 
-Example output:
-```
+Typical output:
+
+```text
 [14:30:15] Session abc123: 12 exchanges, 12 since last save
 [14:35:22] Session abc123: 15 exchanges, 15 since last save
 [14:35:22] TRIGGERING SAVE at exchange 15
-[14:40:01] Session abc123: 18 exchanges, 3 since last save
+[14:40:01] PRE-COMPACT triggered for session abc123
 ```
 
-## Cost
+## Important Boundaries
 
-**Zero extra tokens.** The hooks are bash scripts that run locally. They don't call any API. The only "cost" is the AI spending a few seconds organizing memories at each checkpoint — and it's doing that with context it already has loaded.
+These hooks currently do not:
+
+- import transcripts automatically
+- mine conversations directly
+- write to SQLite themselves
+
+That is intentional. They are control points, not a second persistence stack.
