@@ -958,7 +958,7 @@ wheels = [
 ]
 
 [[package]]
-name = "mempalace"
+name = "multipass"
 version = "3.0.0"
 source = { editable = "." }
 dependencies = [

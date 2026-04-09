@@ -6,7 +6,7 @@ from pathlib import Path
 import chromadb
 import yaml
 
-from mempalace.miner import mine, scan_project
+from multipass.miner import mine, scan_project
 
 
 def write_file(path: Path, content: str):
@@ -28,7 +28,7 @@ def test_project_mining():
         write_file(
             project_root / "backend" / "app.py", "def main():\n    print('hello world')\n" * 20
         )
-        with open(project_root / "mempalace.yaml", "w") as f:
+        with open(project_root / "multipass.yaml", "w") as f:
             yaml.dump(
                 {
                     "wing": "test_project",
@@ -40,11 +40,11 @@ def test_project_mining():
                 f,
             )
 
-        palace_path = project_root / "palace"
-        mine(str(project_root), str(palace_path))
+        ship_path = project_root / "ship"
+        mine(str(project_root), str(ship_path))
 
-        client = chromadb.PersistentClient(path=str(palace_path))
-        col = client.get_collection("mempalace_drawers")
+        client = chromadb.PersistentClient(path=str(ship_path))
+        col = client.get_collection("multipass_crates")
         assert col.count() > 0
     finally:
         shutil.rmtree(tmpdir)

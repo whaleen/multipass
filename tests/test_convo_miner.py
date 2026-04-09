@@ -2,7 +2,7 @@ import os
 import tempfile
 import shutil
 import chromadb
-from mempalace.convo_miner import mine_convos
+from multipass.convo_miner import mine_convos
 
 
 def test_convo_mining():
@@ -12,11 +12,11 @@ def test_convo_mining():
             "> What is memory?\nMemory is persistence.\n\n> Why does it matter?\nIt enables continuity.\n\n> How do we build it?\nWith structured storage.\n"
         )
 
-    palace_path = os.path.join(tmpdir, "palace")
-    mine_convos(tmpdir, palace_path, wing="test_convos")
+    ship_path = os.path.join(tmpdir, "ship")
+    mine_convos(tmpdir, ship_path, wing="test_convos")
 
-    client = chromadb.PersistentClient(path=palace_path)
-    col = client.get_collection("mempalace_drawers")
+    client = chromadb.PersistentClient(path=ship_path)
+    col = client.get_collection("multipass_crates")
     assert col.count() >= 2
 
     # Verify search works

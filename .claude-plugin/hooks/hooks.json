@@ -1,12 +1,12 @@
 {
-  "description": "MemPalace auto-save and pre-compact hooks",
+  "description": "multipass auto-save and pre-compact hooks",
   "hooks": {
     "Stop": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/mempal-stop-hook.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/multipass-stop-hook.sh"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/mempal-precompact-hook.sh"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/multipass-precompact-hook.sh"
           }
         ]
       }

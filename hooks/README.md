@@ -1,15 +1,15 @@
-# MemPalace Hooks — Auto-Save for Terminal AI Tools
+# multipass Hooks — Auto-Save for Terminal AI Tools
 
-These hook scripts make MemPalace save automatically. No manual "save" commands needed.
+These hook scripts make multipass save automatically. No manual "save" commands needed.
 
 ## What They Do
 
 | Hook | When It Fires | What Happens |
 |------|--------------|-------------|
-| **Save Hook** | Every 15 human messages | Blocks the AI, tells it to save key topics/decisions/quotes to the palace |
+| **Save Hook** | Every 15 human messages | Blocks the AI, tells it to save key topics/decisions/quotes to the ship |
 | **PreCompact Hook** | Right before context compaction | Emergency save — forces the AI to save EVERYTHING before losing context |
 
-The AI does the actual filing — it knows the conversation context, so it classifies memories into the right wings/halls/closets. The hooks just tell it WHEN to save.
+The AI does the actual filing — it knows the conversation context, so it classifies memories into the right wings/corridors/lockers. The hooks just tell it WHEN to save.
 
 ## Install — Claude Code
 
@@ -22,14 +22,14 @@ Add to `.claude/settings.local.json`:
       "matcher": "*",
       "hooks": [{
         "type": "command",
-        "command": "/absolute/path/to/hooks/mempal_save_hook.sh",
+        "command": "/absolute/path/to/hooks/multipass_save_hook.sh",
         "timeout": 30
       }]
     }],
     "PreCompact": [{
       "hooks": [{
         "type": "command",
-        "command": "/absolute/path/to/hooks/mempal_precompact_hook.sh",
+        "command": "/absolute/path/to/hooks/multipass_precompact_hook.sh",
         "timeout": 30
       }]
     }]
@@ -39,7 +39,7 @@ Add to `.claude/settings.local.json`:
 
 Make them executable:
 ```bash
-chmod +x hooks/mempal_save_hook.sh hooks/mempal_precompact_hook.sh
+chmod +x hooks/multipass_save_hook.sh hooks/multipass_precompact_hook.sh
 ```
 
 ## Install — Codex CLI (OpenAI)
@@ -50,12 +50,12 @@ Add to `.codex/hooks.json`:
 {
   "Stop": [{
     "type": "command",
-    "command": "/absolute/path/to/hooks/mempal_save_hook.sh",
+    "command": "/absolute/path/to/hooks/multipass_save_hook.sh",
     "timeout": 30
   }],
   "PreCompact": [{
     "type": "command",
-    "command": "/absolute/path/to/hooks/mempal_precompact_hook.sh",
+    "command": "/absolute/path/to/hooks/multipass_precompact_hook.sh",
     "timeout": 30
   }]
 }
@@ -63,19 +63,19 @@ Add to `.codex/hooks.json`:
 
 ## Configuration
 
-Edit `mempal_save_hook.sh` to change:
+Edit `multipass_save_hook.sh` to change:
 
 - **`SAVE_INTERVAL=15`** — How many human messages between saves. Lower = more frequent saves, higher = less interruption.
-- **`STATE_DIR`** — Where hook state is stored (defaults to `~/.mempalace/hook_state/`)
-- **`MEMPAL_DIR`** — Optional. Set to a conversations directory to auto-run `mempalace mine <dir>` on each save trigger. Leave blank (default) to let the AI handle saving via the block reason message.
+- **`STATE_DIR`** — Where hook state is stored (defaults to `~/.multipass/hook_state/`)
+- **`MULTIPASS_DIR`** — Optional. Set to a conversations directory to auto-run `multipass mine <dir>` on each save trigger. Leave blank (default) to let the AI handle saving via the block reason message.
 
-### mempalace CLI
+### multipass CLI
 
 The relevant commands are:
 
 ```bash
-mempalace mine <dir>               # Mine all files in a directory
-mempalace mine <dir> --mode convos # Mine conversation transcripts only
+multipass mine <dir>               # Mine all files in a directory
+multipass mine <dir> --mode convos # Mine conversation transcripts only
 ```
 
 The hooks resolve the repo root automatically from their own path, so they work regardless of where you install the repo.
@@ -93,7 +93,7 @@ User sends message → AI responds → Claude Code fires Stop hook
                               │
                               └─── ≥ 15 since last save ──→ {"decision": "block", "reason": "save..."}
                                                                     ↓
-                                                            AI saves to palace
+                                                            AI saves to ship
                                                                     ↓
                                                             AI tries to stop again
                                                                     ↓
@@ -122,7 +122,7 @@ No counting needed — compaction always warrants a save.
 
 Check the hook log:
 ```bash
-cat ~/.mempalace/hook_state/hook.log
+cat ~/.multipass/hook_state/hook.log
 ```
 
 Example output:

@@ -1,14 +1,14 @@
 {
-  "name": "mempalace",
+  "name": "multipass",
   "owner": {
     "name": "milla-jovovich",
     "url": "https://github.com/milla-jovovich"
   },
   "plugins": [
     {
-      "name": "mempalace",
+      "name": "multipass",
       "source": "./.claude-plugin",
-      "description": "AI memory system — mine projects and conversations into a searchable palace. 19 MCP tools, auto-save hooks, guided setup.",
+      "description": "AI memory system — mine projects and conversations into a searchable ship. 19 MCP tools, auto-save hooks, guided setup.",
       "version": "3.0.14",
       "author": {
         "name": "milla-jovovich"

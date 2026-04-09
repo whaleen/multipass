@@ -1,11 +1,11 @@
 {
-  "name": "mempalace",
+  "name": "multipass",
   "interface": {
-    "displayName": "MemPalace"
+    "displayName": "multipass"
   },
   "plugins": [
     {
-      "name": "mempalace",
+      "name": "multipass",
       "source": {
         "source": "local",
         "path": "./.codex-plugin"
